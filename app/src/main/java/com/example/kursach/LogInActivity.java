@@ -1,6 +1,7 @@
 package com.example.kursach;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -25,14 +26,14 @@ public class LogInActivity extends AppCompatActivity {
 
     private LogInFragment logInFragment;
     private SignInFragment signInFragment;
+    private final String EMAIL = "email";
+    private final String PASS = "pass";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityLogInBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-
 
         logInFragment = new LogInFragment();
         logInFragment.setTryToLogInCallback(this::tryToLogIn);
@@ -44,6 +45,14 @@ public class LogInActivity extends AppCompatActivity {
         signInFragment = new SignInFragment();
         signInFragment.setWantToLogInCallback(this::fromRegisterToLogIn);
         signInFragment.setTryToRegisterCallback(this::tryToRegister);
+
+        SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+        String email = prefs.getString(EMAIL, "None");
+        String pass = prefs.getString(PASS, "N");
+
+        if(!email.equals("None") && !pass.equals("N")) {
+            tryToLogInWithData(email, pass);
+        }
     }
 
     private void fromLogInToRegister() {
@@ -58,10 +67,7 @@ public class LogInActivity extends AppCompatActivity {
         transaction.commit();
     }
 
-    private boolean tryToLogIn(FragmentLogInBinding logInBinding) {
-        String email = logInBinding.email.getText().toString();
-        String password = logInBinding.password.getText().toString();
-
+    private boolean tryToLogInWithData(String email, String password) {
         MainActivity.getAuth().signInWithEmailAndPassword(email, password).addOnFailureListener(
                 e -> logInFragment.showErrorMessage("Такой пользователь не найден")
         ).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
@@ -73,6 +79,10 @@ public class LogInActivity extends AppCompatActivity {
                             @Override
                             public void onSuccess(DataSnapshot dataSnapshot) {
                                 User user = dataSnapshot.getValue(User.class);
+                                if(user == null) {
+                                    logInFragment.showErrorMessage("Кажется, вас забанили))");
+                                    return;
+                                }
                                 logIn(user);
                             }
                         }
@@ -81,6 +91,13 @@ public class LogInActivity extends AppCompatActivity {
         });
 
         return true;
+    }
+
+    private boolean tryToLogIn(FragmentLogInBinding logInBinding) {
+        String email = logInBinding.email.getText().toString();
+        String password = logInBinding.password.getText().toString();
+
+        return tryToLogInWithData(email, password);
     }
 
     private void tryToRegister(FragmentSignInBinding signInBinding) {
@@ -105,6 +122,11 @@ public class LogInActivity extends AppCompatActivity {
     }
 
     private void logIn(User user) {
+        SharedPreferences.Editor prefs = getPreferences(MODE_PRIVATE).edit();
+        prefs.putString(EMAIL, user.email);
+        prefs.putString(PASS, user.pass);
+        prefs.commit();
+
         Intent intent = new Intent();
         intent.putExtra("User", user);
         setResult(RESULT_OK, intent);

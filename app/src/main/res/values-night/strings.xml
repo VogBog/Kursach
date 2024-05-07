@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="callback_post">Отозваться</string>
+    <string name="view_more">Посмотреть ещё</string>
+    <string name="add_post">Добавить</string>
+    <string name="upload">Отправить</string>
 </resources>

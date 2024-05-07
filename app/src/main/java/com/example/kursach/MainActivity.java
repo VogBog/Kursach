@@ -1,8 +1,14 @@
 package com.example.kursach;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -12,19 +18,27 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.kursach.callbacks.CallbackArg;
 import com.example.kursach.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     ActivityMainBinding binding;
     private static FirebaseAuth auth;
     private static FirebaseDatabase database;
     private static DatabaseReference users;
+    private static DatabaseReference posts;
 
-    private User currentUser;
+    private static User currentUser;
     private WallFragment wallFragment;
+    private ProfileFragment profileFragment;
 
     private ActivityResultLauncher<Intent> startLogInForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -64,9 +78,16 @@ public class MainActivity extends AppCompatActivity {
 
     public static DatabaseReference getUsers() {
         if(users == null) {
-            users = database.getReference("Users");
+            users = getDatabase().getReference("Users");
         }
         return users;
+    }
+
+    public static DatabaseReference getPosts() {
+        if(posts == null) {
+            posts = getDatabase().getReference("Posts");
+        }
+        return posts;
     }
 
     @Override
@@ -80,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
         users = database.getReference("Users");
 
         wallFragment = new WallFragment();
+        profileFragment = new ProfileFragment();
 
         binding.homeBtn.setOnClickListener(e -> openPage(0));
         binding.messagesBtn.setOnClickListener(e -> openPage(1));
@@ -91,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openPage(int index) {
-        Fragment[] fragments = new Fragment[] {wallFragment, null, null, null};
+        Fragment[] fragments = new Fragment[] {wallFragment, null, profileFragment, null};
         if(index >= 0 && index < fragments.length && fragments[index] != null) {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(binding.mainFrame.getId(), fragments[index]);
@@ -99,7 +121,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public User getUser() {
+    public static User getUser() {
+        if(currentUser == null)
+            return new User();
         return currentUser;
     }
 
@@ -113,5 +137,15 @@ public class MainActivity extends AppCompatActivity {
         }
         transaction.commit();
         currentUser = user;
+    }
+
+    public void getAvatar(String userId, CallbackArg<Uri> onGetAvatar) {
+        StorageReference ref = FirebaseStorage.getInstance().getReference().child(
+                "images/" + userId + ".jpg");
+        ref.getDownloadUrl().addOnSuccessListener(onGetAvatar::callback);
+    }
+
+    public Bitmap getDefaultAvatar() {
+        return BitmapFactory.decodeResource(getResources(), R.drawable.user);
     }
 }
