@@ -48,15 +48,13 @@ public class LogInActivity extends AppCompatActivity {
 
     private void fromLogInToRegister() {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.remove(logInFragment);
-        transaction.add(binding.main.getId(), signInFragment);
+        transaction.replace(binding.main.getId(), signInFragment);
         transaction.commit();
     }
 
     private void fromRegisterToLogIn() {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.remove(signInFragment);
-        transaction.add(binding.main.getId(), logInFragment);
+        transaction.replace(binding.main.getId(), logInFragment);
         transaction.commit();
     }
 
@@ -64,13 +62,13 @@ public class LogInActivity extends AppCompatActivity {
         String email = logInBinding.email.getText().toString();
         String password = logInBinding.password.getText().toString();
 
-        MainActivity.auth.signInWithEmailAndPassword(email, password).addOnFailureListener(
+        MainActivity.getAuth().signInWithEmailAndPassword(email, password).addOnFailureListener(
                 e -> logInFragment.showErrorMessage("Такой пользователь не найден")
         ).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
             @Override
             public void onSuccess(AuthResult authResult) {
-                MainActivity.users.child(
-                        MainActivity.auth.getCurrentUser().getUid()).get().addOnSuccessListener(
+                MainActivity.getUsers().child(
+                        MainActivity.getAuth().getCurrentUser().getUid()).get().addOnSuccessListener(
                         new OnSuccessListener<DataSnapshot>() {
                             @Override
                             public void onSuccess(DataSnapshot dataSnapshot) {
@@ -90,13 +88,14 @@ public class LogInActivity extends AppCompatActivity {
         String email = signInBinding.email.getText().toString();
         String pass = signInBinding.password.getText().toString();
 
-        MainActivity.auth.createUserWithEmailAndPassword(email, pass).addOnFailureListener(e ->
+        MainActivity.getAuth().createUserWithEmailAndPassword(email, pass).addOnFailureListener(e ->
                 signInFragment.showErrorMessage("Такой пользователь уже существует")).
                 addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
-                        User user = new User(email, pass, name);
-                        MainActivity.users.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                        String id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                        User user = new User(id, email, pass, name);
+                        MainActivity.getUsers().child(id)
                         .setValue(user).addOnSuccessListener(e -> logIn(user)).addOnFailureListener(
                                 e -> signInFragment.showErrorMessage("Что-то пошло не так")
                                 );

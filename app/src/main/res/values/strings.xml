@@ -5,4 +5,5 @@
     <string name="log_in">Войти в аккаунт</string>
     <string name="logIn">Войти</string>
     <string name="sign_in">Зарегистрироваться</string>
+    <string name="callback_post">Отозваться</string>
 </resources>
