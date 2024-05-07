@@ -40,11 +40,13 @@ public class SignInFragment extends Fragment {
                 String email = binding.email.getText().toString();
                 String pass = binding.password.getText().toString();
                 String repeatPass = binding.repeatPassword.getText().toString();
+                String phone = binding.phoneInput.getText().toString();
 
-                if(name.isEmpty() || name.length() > 20 ||
-                email.isEmpty() || email.length() > 50 ||
+                if(name.isEmpty() || name.length() > 40 ||
+                email.isEmpty() || email.length() > 60 ||
                 pass.isEmpty() || pass.length() < 5 || pass.length() > 50 ||
-                repeatPass.isEmpty() || repeatPass.length() < 5 || repeatPass.length() > 50) {
+                repeatPass.isEmpty() || repeatPass.length() < 5 || repeatPass.length() > 50 ||
+                phone.isEmpty() || phone.length() > 13 || phone.length() < 10) {
                     showErrorMessage("Некорректные данные");
                     return;
                 }

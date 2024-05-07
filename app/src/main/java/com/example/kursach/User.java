@@ -6,17 +6,18 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 public class User implements Parcelable {
-    public String id, email, pass, name;
+    public String id, email, pass, name, phone;
 
     public User() {
         this.name = "User";
     }
 
-    public User(String id, String email, String pass, String name) {
+    public User(String id, String email, String pass, String name, String phone) {
         this.id = id;
         this.email = email;
         this.pass = pass;
         this.name = name;
+        this.phone = phone;
     }
 
     protected User(Parcel in) {
@@ -24,6 +25,7 @@ public class User implements Parcelable {
         email = in.readString();
         pass = in.readString();
         name = in.readString();
+        phone = in.readString();
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
@@ -49,5 +51,6 @@ public class User implements Parcelable {
         dest.writeString(email);
         dest.writeString(pass);
         dest.writeString(name);
+        dest.writeString(phone);
     }
 }

@@ -3,6 +3,7 @@ package com.example.kursach;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private static User currentUser;
     private WallFragment wallFragment;
     private ProfileFragment profileFragment;
+    private SettingsFragment settingsFragment;
 
     private ActivityResultLauncher<Intent> startLogInForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -102,6 +104,12 @@ public class MainActivity extends AppCompatActivity {
 
         wallFragment = new WallFragment();
         profileFragment = new ProfileFragment();
+        settingsFragment = new SettingsFragment();
+        settingsFragment.setQuitPressedCallback(() -> {
+            Intent intent = new Intent(binding.getRoot().getContext(), LogInActivity.class);
+            intent.putExtra("IsClear", true);
+            startLogInForResult.launch(intent);
+        });
 
         binding.homeBtn.setOnClickListener(e -> openPage(0));
         binding.messagesBtn.setOnClickListener(e -> openPage(1));
@@ -113,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openPage(int index) {
-        Fragment[] fragments = new Fragment[] {wallFragment, null, profileFragment, null};
+        Fragment[] fragments = new Fragment[] {wallFragment, null, profileFragment, settingsFragment};
         if(index >= 0 && index < fragments.length && fragments[index] != null) {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(binding.mainFrame.getId(), fragments[index]);

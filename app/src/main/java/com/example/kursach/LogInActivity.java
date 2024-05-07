@@ -26,8 +26,8 @@ public class LogInActivity extends AppCompatActivity {
 
     private LogInFragment logInFragment;
     private SignInFragment signInFragment;
-    private final String EMAIL = "email";
-    private final String PASS = "pass";
+    public static final String EMAIL = "email";
+    public static final String PASS = "pass";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,11 +47,21 @@ public class LogInActivity extends AppCompatActivity {
         signInFragment.setTryToRegisterCallback(this::tryToRegister);
 
         SharedPreferences prefs = getPreferences(MODE_PRIVATE);
-        String email = prefs.getString(EMAIL, "None");
-        String pass = prefs.getString(PASS, "N");
+        Intent intent = getIntent();
+        boolean isClear = intent.getBooleanExtra("IsClear", false);
+        if(isClear) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString(EMAIL, "None");
+            editor.putString(PASS, "N");
+            editor.commit();
+        }
+        else {
+            String email = prefs.getString(EMAIL, "None");
+            String pass = prefs.getString(PASS, "N");
 
-        if(!email.equals("None") && !pass.equals("N")) {
-            tryToLogInWithData(email, pass);
+            if(!email.equals("None") && !pass.equals("N")) {
+                tryToLogInWithData(email, pass);
+            }
         }
     }
 
@@ -104,6 +114,7 @@ public class LogInActivity extends AppCompatActivity {
         String name = signInBinding.nameEdit.getText().toString();
         String email = signInBinding.email.getText().toString();
         String pass = signInBinding.password.getText().toString();
+        String phone = signInBinding.phoneInput.getText().toString();
 
         MainActivity.getAuth().createUserWithEmailAndPassword(email, pass).addOnFailureListener(e ->
                 signInFragment.showErrorMessage("Такой пользователь уже существует")).
@@ -111,7 +122,7 @@ public class LogInActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(AuthResult authResult) {
                         String id = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                        User user = new User(id, email, pass, name);
+                        User user = new User(id, email, pass, name, phone);
                         MainActivity.getUsers().child(id)
                         .setValue(user).addOnSuccessListener(e -> logIn(user)).addOnFailureListener(
                                 e -> signInFragment.showErrorMessage("Что-то пошло не так")

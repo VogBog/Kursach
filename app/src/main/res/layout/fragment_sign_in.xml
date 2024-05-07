@@ -32,6 +32,16 @@
             android:textSize="24sp" />
 
         <EditText
+            android:id="@+id/phoneInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="phone"
+            android:inputType="phone"
+            android:textColor="@color/white"
+            android:textSize="24sp" />
+
+        <EditText
             android:id="@+id/email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -1,18 +1,18 @@
 package com.example.kursach;
 
 import com.example.kursach.callbacks.CallbackArg;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.DataSnapshot;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 public class Post {
     public String id;
     public User author;
     public String postName, postDescription;
     public int maxPlayers;
-    public ArrayList<User> players;
+    public ArrayList<User> players = new ArrayList<>();
+    ArrayList<String> initIds = new ArrayList<>();
+    private int playersCount = 0;
+    UserAdapter userAdapter;
 
     public Post() {
         author = new User();
@@ -38,10 +38,20 @@ public class Post {
         maxPlayers = data.maxPlayers;
         author = new User();
 
+        players.clear();
+        if(data.players != null) {
+            initIds = data.players;
+            playersCount = data.players.size();
+        }
+
         MainActivity.getUsers().child(data.authorId).get().addOnSuccessListener(snapshot -> {
             User user = snapshot.getValue(User.class);
             author = user;
             getUserCallback.callback(this);
         });
+    }
+
+    public int getPlayersCount() {
+        return playersCount;
     }
 }

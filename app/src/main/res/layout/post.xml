@@ -76,7 +76,7 @@
         app:layout_constraintTop_toBottomOf="@+id/postName" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/callBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
@@ -89,5 +89,26 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/postDescription" />
+
+    <TextView
+        android:id="@+id/playersCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="35dp"
+        android:layout_marginTop="36dp"
+        android:text="0/10"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        app:layout_constraintStart_toEndOf="@+id/callBtn"
+        app:layout_constraintTop_toBottomOf="@+id/postDescription" />
+
+    <ListView
+        android:id="@+id/playersList"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/callBtn"
+        app:layout_constraintTop_toBottomOf="@+id/callBtn" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

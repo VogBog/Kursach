@@ -4,4 +4,7 @@
     <string name="view_more">Посмотреть ещё</string>
     <string name="add_post">Добавить</string>
     <string name="upload">Отправить</string>
+    <string name="quit">Выход</string>
+    <string name="name">Прохоров Владимир Ефимович</string>
+    <string name="aboout_me">Студент группы ИКБО-03-22\nПочта: vogbog92@gmail.com\nГод создания: 2024\n\nМобильное приложение для поиска команды для настольно ролевых игр</string>
 </resources>

@@ -75,6 +75,12 @@ public class ProfileFragment extends Fragment {
 
         ArrayList<Post> posts = new ArrayList<>();
         postAdapter = new PostAdapter(getContext(), posts, true);
+        postAdapter.setUserAdapterCallback(user -> {
+            Intent intent = new Intent(getContext(), OtherPlayerProfileActivity.class);
+            intent.putExtra(OtherPlayerProfileActivity.NAME, user.name);
+            intent.putExtra(OtherPlayerProfileActivity.PHONE, user.phone);
+            startActivity(intent);
+        });
         postAdapter.setRemovePostCallback(post -> {
             MainActivity.getPosts().child(post.id).removeValue().addOnSuccessListener(e -> {
                 postAdapter.posts.remove(post);
@@ -92,11 +98,18 @@ public class ProfileFragment extends Fragment {
                     PostData data = item.getValue(PostData.class);
                     datas.add(data);
                 }
+                if(datas.size() == 0)
+                    return;
+
+                final String lastId = datas.get(0).id;
                 for(int i = datas.size() - 1; i >= 0; i--) {
                     Post post = new Post();
                     post.setData(datas.get(i), totalPost -> {
-                        postAdapter.posts.add(totalPost);
+                        postAdapter.add(totalPost);
                         postAdapter.notifyDataSetChanged();
+                        if(!totalPost.id.equals(lastId)) {
+                            postAdapter.notificateAllUserAdapters();
+                        }
                     });
                 }
             }

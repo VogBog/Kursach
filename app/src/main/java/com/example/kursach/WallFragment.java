@@ -1,5 +1,6 @@
 package com.example.kursach;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -37,6 +38,16 @@ public class WallFragment extends Fragment {
         Query query = MainActivity.getPosts();
         ArrayList<Post> posts = new ArrayList<>();
         postAdapter = new PostAdapter(binding.getRoot().getContext(), posts, false);
+        postAdapter.setCallPostCallback(post -> {
+            MainActivity.getPosts().child(post.id).get().addOnSuccessListener(snapshot -> {
+                PostData data = snapshot.getValue(PostData.class);
+                data.players.add(MainActivity.getAuth().getCurrentUser().getUid());
+                MainActivity.getPosts().child(post.id).setValue(data).addOnSuccessListener(d -> {
+                    postAdapter.posts.remove(post);
+                    postAdapter.notifyDataSetChanged();
+                });
+            });
+        });
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -49,10 +60,22 @@ public class WallFragment extends Fragment {
                     if(datas.get(i).authorId.equals(MainActivity.getAuth().getCurrentUser().getUid())) {
                         continue;
                     }
+                    boolean isContinue = false;
+                    if(datas.get(i).players != null) {
+                        for(String id : datas.get(i).players) {
+                            if(id.equals(MainActivity.getAuth().getCurrentUser().getUid())) {
+                                isContinue = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(isContinue) {
+                        continue;
+                    }
 
                     Post post = new Post();
                     post.setData(datas.get(i), totalPost -> {
-                        postAdapter.posts.add(totalPost);
+                        postAdapter.add(totalPost);
                         postAdapter.notifyDataSetChanged();
                     });
                     lastItemKey = datas.get(i).id;
@@ -87,7 +110,7 @@ public class WallFragment extends Fragment {
                     Post post = new Post();
                     PostData data = item.getValue(PostData.class);
                     post.setData(data, totalPost -> {
-                        postAdapter.posts.add(totalPost);
+                        postAdapter.add(totalPost);
                         postAdapter.notifyDataSetChanged();
                     });
 
