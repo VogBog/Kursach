@@ -38,6 +38,7 @@ public class ProfileFragment extends Fragment {
     private PostAdapter postAdapter;
     private ActivityResultLauncher<PickVisualMediaRequest> getImageFromDevice;
     private ActivityResultLauncher<Intent> writeNewPost;
+    private ImageView avatarImg;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -79,6 +80,7 @@ public class ProfileFragment extends Fragment {
             Intent intent = new Intent(getContext(), OtherPlayerProfileActivity.class);
             intent.putExtra(OtherPlayerProfileActivity.NAME, user.name);
             intent.putExtra(OtherPlayerProfileActivity.PHONE, user.phone);
+            intent.putExtra(OtherPlayerProfileActivity.ID, user.id);
             startActivity(intent);
         });
         postAdapter.setRemovePostCallback(post -> {
@@ -95,6 +97,7 @@ public class ProfileFragment extends Fragment {
         header.findViewById(R.id.avatarBtn).setOnClickListener(e -> wantToChangeAvatar());
 
         final ImageView image = header.findViewById(R.id.avatarImg);
+        avatarImg = image;
         if(MainActivity.userAvatar == null)
             image.setImageResource(GetImageFromServer.getDefaultAvatarId());
         else
@@ -131,7 +134,6 @@ public class ProfileFragment extends Fragment {
 
         postAdapter.posts.clear();
         postAdapter.posts.addAll(datas);
-        postAdapter.notificateAllUserAdapters();
     }
 
     private void updatePostsContent(@NonNull DataSnapshot snapshot) {
@@ -152,12 +154,10 @@ public class ProfileFragment extends Fragment {
                 postAdapter.add(totalPost);
                 MainActivity.myPosts.add(totalPost);
                 if(totalPost.id.equals(lastId)) {
-                    postAdapter.notificateAllUserAdapters();
                     postAdapter.notifyDataSetChanged();
                 }
             });
         }
-        postAdapter.notificateAllUserAdapters();
         postAdapter.notifyDataSetChanged();
     }
 
@@ -183,11 +183,15 @@ public class ProfileFragment extends Fragment {
         UploadTask task = storage.putBytes(data);
         MainActivity.userAvatar = bitmap;
         task.addOnSuccessListener(t -> {
-            if(getActivity() instanceof MainActivity) {
                 MainActivity.getUsers().child(MainActivity.getUser().id).setValue(
                         MainActivity.getUser()
-                ).addOnSuccessListener(e -> ((MainActivity) getActivity()).openPage(2));
-            }
+                ).addOnSuccessListener(e -> avatarImg.setImageBitmap(bitmap));
         });
+    }
+
+    @Override
+    public void onDestroy() {
+        postAdapter.clear();
+        super.onDestroy();
     }
 }

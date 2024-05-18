@@ -2,8 +2,15 @@ package com.example.kursach;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+
+import com.example.kursach.callbacks.CallbackArg;
 
 public class User implements Parcelable {
     public String id, email, pass, name, phone;
@@ -52,5 +59,24 @@ public class User implements Parcelable {
         dest.writeString(pass);
         dest.writeString(name);
         dest.writeString(phone);
+    }
+
+    public View createView(LayoutInflater inflater, ViewGroup parent, CallbackArg<User> userCallback) {
+        inflater.inflate(R.layout.user_layout, parent);
+        View userView = parent.getChildAt(parent.getChildCount() - 1);
+        ((TextView) userView.findViewById(R.id.nickname)).setText(name);
+        userView.findViewById(R.id.avatarBtn).setOnClickListener(e -> {
+            if(userCallback != null) {
+                userCallback.callback(this);
+            }
+        });
+        ImageView avatar = userView.findViewById(R.id.avatarImg);
+        avatar.setImageResource(R.drawable.user);
+        GetImageFromServer.getAvatar(parent.getContext(), id, bitmap -> {
+            if(avatar != null) {
+                avatar.setImageBitmap(bitmap);
+            }
+        });
+        return userView;
     }
 }

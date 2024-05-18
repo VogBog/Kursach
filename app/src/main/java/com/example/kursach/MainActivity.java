@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private ProfileFragment profileFragment;
     private SettingsFragment settingsFragment;
     public static final ArrayList<Post> myPosts = new ArrayList<>();
+    public static final ArrayList<Post> wall = new ArrayList<>();
 
     private ActivityResultLauncher<Intent> startLogInForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -138,6 +139,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setUser(User user) {
+        wall.clear();
+        myPosts.clear();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if(binding.mainFrame.getChildCount() == 0) {
             transaction.add(binding.mainFrame.getId(), wallFragment);

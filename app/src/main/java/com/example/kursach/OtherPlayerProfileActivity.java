@@ -1,6 +1,8 @@
 package com.example.kursach;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -17,6 +19,7 @@ public class OtherPlayerProfileActivity extends AppCompatActivity {
 
     public static final String NAME = "NAME";
     public static final String PHONE = "PHONE";
+    public static final String ID = "ID";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +35,11 @@ public class OtherPlayerProfileActivity extends AppCompatActivity {
         if(intent != null) {
             String name = intent.getStringExtra(NAME);
             String phone = intent.getStringExtra(PHONE);
+            String id = intent.getStringExtra(ID);
+            binding.avatarImg.setImageResource(R.drawable.user);
+            if(id != null) {
+                GetImageFromServer.getAvatar(this, id, binding.avatarImg::setImageBitmap);
+            }
             binding.phoneNumber.setText(phone);
             binding.playerName.setText(name);
         }

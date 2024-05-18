@@ -1,6 +1,7 @@
 package com.example.kursach;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.Image;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,8 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.kursach.callbacks.CallbackArg;
 
@@ -29,29 +32,23 @@ public class PostAdapter extends BaseAdapter {
     public PostAdapter(Context context, ArrayList<Post> posts, boolean isAuthor) {
         this.context = context;
         this.posts.addAll(posts);
-        for(Post post : this.posts) {
-            post.userAdapter = new UserAdapter(context, post.initIds);
-        }
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.isAuthor = isAuthor;
     }
 
     public void add(Post post) {
         posts.add(post);
-        if(post.userAdapter == null) {
-            post.userAdapter = new UserAdapter(context, post.initIds);
-            if(userCallback != null) {
-                post.userAdapter.setClickedEvent(userCallback);
-            }
-        }
         notifyDataSetChanged();
     }
 
     public void setUserAdapterCallback(CallbackArg<User> callback) {
-        for(Post post : posts) {
-            post.userAdapter.setClickedEvent(callback);
-        }
         userCallback = callback;
+    }
+
+    public void clear() {
+        for(Post post : posts) {
+            post.players.clear();
+        }
     }
 
     @Override
@@ -84,6 +81,22 @@ public class PostAdapter extends BaseAdapter {
         ((TextView)convertView.findViewById(R.id.postName)).setText(post.postName);
         ((TextView)convertView.findViewById(R.id.postDescription)).setText(post.postDescription);
         ((TextView) convertView.findViewById(R.id.playersCount)).setText(post.getPlayersCount() + "/10");
+        post.layout = convertView.findViewById(R.id.playersList);
+
+        if(isAuthor) {
+            for(String userId : post.initIds) {
+                MainActivity.getUsers().child(userId).get().addOnSuccessListener(snapshot -> {
+                    User user = snapshot.getValue(User.class);
+                    for(User player : post.players) {
+                        if(player.id.equals(user.id)) {
+                            return;
+                        }
+                    }
+                    post.players.add(0, user);
+                    user.createView(inflater, post.layout, userCallback);
+                });
+            }
+        }
 
         final ImageView image = convertView.findViewById(R.id.avatarImg);
 
@@ -105,6 +118,10 @@ public class PostAdapter extends BaseAdapter {
                     callPostCallback.callback(post);
                 }
             });
+            if(userCallback != null) {
+                convertView.findViewById(R.id.avatarBtn).setOnClickListener(v ->
+                        userCallback.callback(post.author));
+            }
         }
         else {
             convertView.findViewById(R.id.removePostBtn).setOnClickListener(e -> {
@@ -113,9 +130,6 @@ public class PostAdapter extends BaseAdapter {
                 }
             });
             convertView.findViewById(R.id.callBtn).setVisibility(View.INVISIBLE);
-
-            ListView list = convertView.findViewById(R.id.playersList);
-            list.setAdapter(post.userAdapter);
         }
 
         return convertView;
@@ -127,14 +141,5 @@ public class PostAdapter extends BaseAdapter {
 
     public void setCallPostCallback(CallbackArg<Post> callback) {
         callPostCallback = callback;
-    }
-
-    public void notificateAllUserAdapters() {
-        for(Post post : posts) {
-            if(post.userAdapter != null) {
-                post.userAdapter.notifyDataSetChanged();
-            }
-        }
-        notifyDataSetChanged();
     }
 }

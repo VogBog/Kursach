@@ -1,5 +1,11 @@
 package com.example.kursach;
 
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import com.example.kursach.callbacks.CallbackArg;
 
 import java.util.ArrayList;
@@ -12,7 +18,7 @@ public class Post {
     public ArrayList<User> players = new ArrayList<>();
     ArrayList<String> initIds = new ArrayList<>();
     private int playersCount = 0;
-    UserAdapter userAdapter;
+    LinearLayout layout;
 
     public Post() {
         author = new User();
