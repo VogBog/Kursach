@@ -14,6 +14,7 @@
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginTop="100dp"
+            app:cardBackgroundColor="@color/background"
             app:cardCornerRadius="100dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"

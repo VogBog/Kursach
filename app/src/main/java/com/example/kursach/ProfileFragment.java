@@ -1,15 +1,9 @@
 package com.example.kursach;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -35,7 +29,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class ProfileFragment extends Fragment {
@@ -44,12 +37,19 @@ public class ProfileFragment extends Fragment {
 
     private PostAdapter postAdapter;
     private ActivityResultLauncher<PickVisualMediaRequest> getImageFromDevice;
+    private ActivityResultLauncher<Intent> writeNewPost;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         binding = FragmentProfileBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
+
+        writeNewPost = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(), res -> {
+                    updatePostsContent();
+                }
+        );
 
         getImageFromDevice = registerForActivityResult(
                 new ActivityResultContracts.PickVisualMedia(), uri -> {
@@ -88,30 +88,31 @@ public class ProfileFragment extends Fragment {
             });
         });
 
+        View header = getLayoutInflater().inflate(R.layout.profile_header, null);
+        header.findViewById(R.id.addPost).setOnClickListener(e -> addNewPost());
+
+        ((TextView) header.findViewById(R.id.userName)).setText(MainActivity.getUser().name);
+        header.findViewById(R.id.avatarBtn).setOnClickListener(e -> wantToChangeAvatar());
+
+        final ImageView image = header.findViewById(R.id.avatarImg);
+        if(MainActivity.userAvatar == null)
+            image.setImageResource(GetImageFromServer.getDefaultAvatarId());
+        else
+            image.setImageBitmap(MainActivity.userAvatar);
+        binding.mainList.addHeaderView(header);
+        binding.mainList.setAdapter(postAdapter);
+        setAdapterFromMyUsers();
+
+        return view;
+    }
+
+    private void updatePostsContent() {
         Query query = MainActivity.getPosts().orderByChild("authorId")
                 .equalTo(MainActivity.getAuth().getCurrentUser().getUid());
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                ArrayList<PostData> datas = new ArrayList<>();
-                for(DataSnapshot item : snapshot.getChildren()) {
-                    PostData data = item.getValue(PostData.class);
-                    datas.add(data);
-                }
-                if(datas.size() == 0)
-                    return;
-
-                final String lastId = datas.get(0).id;
-                for(int i = datas.size() - 1; i >= 0; i--) {
-                    Post post = new Post();
-                    post.setData(datas.get(i), totalPost -> {
-                        postAdapter.add(totalPost);
-                        postAdapter.notifyDataSetChanged();
-                        if(!totalPost.id.equals(lastId)) {
-                            postAdapter.notificateAllUserAdapters();
-                        }
-                    });
-                }
+                updatePostsContent(snapshot);
             }
 
             @Override
@@ -119,48 +120,68 @@ public class ProfileFragment extends Fragment {
                 Log.e("ERROR", "Posts canceled: " + error.getMessage());
             }
         });
+    }
 
-        View header = getLayoutInflater().inflate(R.layout.profile_header, null);
+    private void setAdapterFromMyUsers() {
+        ArrayList<Post> datas = MainActivity.myPosts;
+        if(datas.isEmpty()) {
+            updatePostsContent();
+            return;
+        }
 
-        //if(getActivity() instanceof MainActivity) {
-            //MainActivity activity = (MainActivity) getActivity();
-            //((ImageView) header.findViewById(R.id.avatarImg)).setImageBitmap(activity.getDefaultAvatar());
-            //activity.getAvatar(MainActivity.getAuth().getUid(), uri -> {
-                //((ImageView) header.findViewById(R.id.avatarImg)).setImageURI(uri);
-            //});
-        //}
-        header.findViewById(R.id.addPost).setOnClickListener(e -> addNewPost());
+        postAdapter.posts.clear();
+        postAdapter.posts.addAll(datas);
+        postAdapter.notificateAllUserAdapters();
+    }
 
-        ((TextView) header.findViewById(R.id.userName)).setText(MainActivity.getUser().name);
-        header.findViewById(R.id.avatarBtn).setOnClickListener(e -> wantToChangeAvatar());
-        binding.mainList.addHeaderView(header);
-        binding.mainList.setAdapter(postAdapter);
+    private void updatePostsContent(@NonNull DataSnapshot snapshot) {
+        ArrayList<PostData> datas = new ArrayList<>();
+        for(DataSnapshot item : snapshot.getChildren()) {
+            PostData data = item.getValue(PostData.class);
+            datas.add(data);
+        }
+        if(datas.size() == 0)
+            return;
 
-        return view;
+        postAdapter.posts.clear();
+        MainActivity.myPosts.clear();
+        final String lastId = datas.get(0).id;
+        for(int i = datas.size() - 1; i >= 0; i--) {
+            Post post = new Post();
+            post.setData(datas.get(i), totalPost -> {
+                postAdapter.add(totalPost);
+                MainActivity.myPosts.add(totalPost);
+                if(totalPost.id.equals(lastId)) {
+                    postAdapter.notificateAllUserAdapters();
+                    postAdapter.notifyDataSetChanged();
+                }
+            });
+        }
+        postAdapter.notificateAllUserAdapters();
+        postAdapter.notifyDataSetChanged();
     }
 
     private void wantToChangeAvatar() {
-        return;
-        //getImageFromDevice.launch(new PickVisualMediaRequest.Builder()
-                //.setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
-                //.build());
+        getImageFromDevice.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build());
     }
 
     private void addNewPost() {
         Intent intent = new Intent(getContext(), AddPostActivity.class);
-        startActivity(intent);
+        writeNewPost.launch(intent);
     }
 
     private void changeAvatar(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] data = baos.toByteArray();
-        Log.d("TEST", "Start");
         StorageReference storage = FirebaseStorage.getInstance().getReference()
                 .child("images/"
                         + MainActivity.getAuth().getUid()
                         + ".jpg");
         UploadTask task = storage.putBytes(data);
+        MainActivity.userAvatar = bitmap;
         task.addOnSuccessListener(t -> {
             if(getActivity() instanceof MainActivity) {
                 MainActivity.getUsers().child(MainActivity.getUser().id).setValue(
@@ -168,6 +189,5 @@ public class ProfileFragment extends Fragment {
                 ).addOnSuccessListener(e -> ((MainActivity) getActivity()).openPage(2));
             }
         });
-        Log.d("TEST", "Its okay");
     }
 }

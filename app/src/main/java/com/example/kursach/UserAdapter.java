@@ -1,7 +1,6 @@
 package com.example.kursach;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,7 +48,6 @@ public class UserAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Log.d("TESTTEST", "VIEW");
         final View view;
         if(convertView == null) {
             view = inflater.inflate(R.layout.user_layout, parent, false);

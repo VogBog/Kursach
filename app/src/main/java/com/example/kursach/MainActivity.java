@@ -38,9 +38,11 @@ public class MainActivity extends AppCompatActivity {
     private static DatabaseReference posts;
 
     private static User currentUser;
+    public static Bitmap userAvatar;
     private WallFragment wallFragment;
     private ProfileFragment profileFragment;
     private SettingsFragment settingsFragment;
+    public static final ArrayList<Post> myPosts = new ArrayList<>();
 
     private ActivityResultLauncher<Intent> startLogInForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -145,15 +147,7 @@ public class MainActivity extends AppCompatActivity {
         }
         transaction.commit();
         currentUser = user;
-    }
-
-    public void getAvatar(String userId, CallbackArg<Uri> onGetAvatar) {
-        StorageReference ref = FirebaseStorage.getInstance().getReference().child(
-                "images/" + userId + ".jpg");
-        ref.getDownloadUrl().addOnSuccessListener(onGetAvatar::callback);
-    }
-
-    public Bitmap getDefaultAvatar() {
-        return BitmapFactory.decodeResource(getResources(), R.drawable.user);
+        userAvatar = null;
+        GetImageFromServer.getAvatar(this, user.id, bitmap -> userAvatar = bitmap);
     }
 }

@@ -1,11 +1,13 @@
 package com.example.kursach;
 
 import android.content.Context;
+import android.media.Image;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -73,7 +75,6 @@ public class PostAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Log.d("Get view", "Start");
         if(convertView == null) {
             convertView = inflater.inflate(R.layout.post, parent, false);
         }
@@ -83,6 +84,19 @@ public class PostAdapter extends BaseAdapter {
         ((TextView)convertView.findViewById(R.id.postName)).setText(post.postName);
         ((TextView)convertView.findViewById(R.id.postDescription)).setText(post.postDescription);
         ((TextView) convertView.findViewById(R.id.playersCount)).setText(post.getPlayersCount() + "/10");
+
+        final ImageView image = convertView.findViewById(R.id.avatarImg);
+
+        if(!post.author.id.equals(MainActivity.getUser().id)) {
+            image.setImageResource(R.drawable.user);
+            GetImageFromServer.getAvatar(context, post.author.id, image::setImageBitmap);
+        }
+        else {
+            if(MainActivity.userAvatar != null)
+                image.setImageBitmap(MainActivity.userAvatar);
+            else
+                image.setImageResource(GetImageFromServer.getDefaultAvatarId());
+        }
 
         if(!isAuthor) {
             convertView.findViewById(R.id.removePostBtn).setVisibility(View.INVISIBLE);
@@ -121,5 +135,6 @@ public class PostAdapter extends BaseAdapter {
                 post.userAdapter.notifyDataSetChanged();
             }
         }
+        notifyDataSetChanged();
     }
 }
