@@ -7,4 +7,5 @@
     <string name="quit">Выход</string>
     <string name="name">Прохоров Владимир Ефимович</string>
     <string name="aboout_me">Студент группы ИКБО-03-22\nПочта: vogbog92@gmail.com\nГод создания: 2024\n\nМобильное приложение для поиска команды для настольно ролевых игр</string>
+    <string name="post_name">Название</string>
 </resources>

@@ -69,6 +69,9 @@ public class WallFragment extends Fragment {
                         if (datas.get(i).authorId.equals(MainActivity.getAuth().getCurrentUser().getUid())) {
                             continue;
                         }
+                        if(datas.get(i).players.size() >= datas.get(i).maxPlayers) {
+                            continue;
+                        }
                         boolean isContinue = false;
                         if (datas.get(i).players != null) {
                             for (String id : datas.get(i).players) {

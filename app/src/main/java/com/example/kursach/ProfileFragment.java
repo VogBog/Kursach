@@ -84,10 +84,16 @@ public class ProfileFragment extends Fragment {
             startActivity(intent);
         });
         postAdapter.setRemovePostCallback(post -> {
-            MainActivity.getPosts().child(post.id).removeValue().addOnSuccessListener(e -> {
-                postAdapter.posts.remove(post);
-                postAdapter.notifyDataSetChanged();
-            });
+            AreYouSureDialog dialog = new AreYouSureDialog();
+            dialog.onAnswer = bool -> {
+                if(bool) {
+                    MainActivity.getPosts().child(post.id).removeValue().addOnSuccessListener(e -> {
+                        postAdapter.posts.remove(post);
+                        postAdapter.notifyDataSetChanged();
+                    });
+                }
+            };
+            dialog.show(getActivity().getSupportFragmentManager(), "custom");
         });
 
         View header = getLayoutInflater().inflate(R.layout.profile_header, null);

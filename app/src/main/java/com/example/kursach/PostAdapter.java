@@ -80,7 +80,8 @@ public class PostAdapter extends BaseAdapter {
         ((TextView)convertView.findViewById(R.id.authorName)).setText(post.author.name);
         ((TextView)convertView.findViewById(R.id.postName)).setText(post.postName);
         ((TextView)convertView.findViewById(R.id.postDescription)).setText(post.postDescription);
-        ((TextView) convertView.findViewById(R.id.playersCount)).setText(post.getPlayersCount() + "/10");
+        ((TextView) convertView.findViewById(R.id.playersCount)).setText(
+                post.getPlayersCount() + "/" + post.maxPlayers);
         post.layout = convertView.findViewById(R.id.playersList);
 
         if(isAuthor) {
