@@ -14,6 +14,7 @@ public class OtherPlayerProfileActivity extends AppCompatActivity {
     public static final String NAME = "NAME";
     public static final String PHONE = "PHONE";
     public static final String ID = "ID";
+    public static final String DESCRIPTION = "DESCRIPTION";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,12 +31,16 @@ public class OtherPlayerProfileActivity extends AppCompatActivity {
             String name = intent.getStringExtra(NAME);
             String phone = intent.getStringExtra(PHONE);
             String id = intent.getStringExtra(ID);
+            String description = intent.getStringExtra(DESCRIPTION);
             binding.avatarImg.setImageResource(R.drawable.user);
             if(id != null) {
                 GetImageFromServer.getAvatar(this, id, binding.avatarImg::setImageBitmap);
             }
             binding.phoneNumber.setText(phone);
             binding.playerName.setText(name);
+            if(description != null && !description.isEmpty()) {
+                binding.profileDescription.setText(description);
+            }
         }
     }
 }

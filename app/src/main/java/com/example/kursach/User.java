@@ -13,18 +13,19 @@ import androidx.annotation.NonNull;
 import com.example.kursach.callbacks.CallbackArg;
 
 public class User implements Parcelable {
-    public String id, email, pass, name, phone;
+    public String id, email, pass, name, phone, description;
 
     public User() {
         this.name = "User";
     }
 
-    public User(String id, String email, String pass, String name, String phone) {
+    public User(String id, String email, String pass, String name, String phone, String description) {
         this.id = id;
         this.email = email;
         this.pass = pass;
         this.name = name;
         this.phone = phone;
+        this.description = description;
     }
 
     protected User(Parcel in) {
@@ -33,6 +34,7 @@ public class User implements Parcelable {
         pass = in.readString();
         name = in.readString();
         phone = in.readString();
+        description = in.readString();
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
@@ -59,6 +61,7 @@ public class User implements Parcelable {
         dest.writeString(pass);
         dest.writeString(name);
         dest.writeString(phone);
+        dest.writeString(description);
     }
 
     public View createView(LayoutInflater inflater, ViewGroup parent, CallbackArg<User> userCallback) {

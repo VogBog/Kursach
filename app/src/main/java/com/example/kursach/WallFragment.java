@@ -43,6 +43,7 @@ public class WallFragment extends Fragment {
             intent.putExtra(OtherPlayerProfileActivity.NAME, user.name);
             intent.putExtra(OtherPlayerProfileActivity.PHONE, user.phone);
             intent.putExtra(OtherPlayerProfileActivity.ID, user.id);
+            intent.putExtra(OtherPlayerProfileActivity.DESCRIPTION, user.description);
             startActivity(intent);
         });
         if(posts.isEmpty()) {
