@@ -1,5 +1,6 @@
 package com.example.kursach;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -38,7 +39,9 @@ public class ProfileFragment extends Fragment {
     private PostAdapter postAdapter;
     private ActivityResultLauncher<PickVisualMediaRequest> getImageFromDevice;
     private ActivityResultLauncher<Intent> writeNewPost;
+    private ActivityResultLauncher<Intent> editProfile;
     private ImageView avatarImg;
+    private View profileHeader;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -74,6 +77,38 @@ public class ProfileFragment extends Fragment {
                 }
         );
 
+        editProfile = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(), res -> {
+                    if(res.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = res.getData();
+                        String name = data.getStringExtra(EditProfileActivity.NAME);
+                        String phone = data.getStringExtra(EditProfileActivity.PHONE);
+                        String description = data.getStringExtra(EditProfileActivity.DESCRIPTION);
+                        if(name != null && phone != null && description != null) {
+                            if(name.isEmpty() || name.length() > 40 ||
+                                    phone.isEmpty() || phone.length() > 13 || phone.length() < 10) {
+                                return;
+                            }
+                            User user = MainActivity.getUser();
+                            user.name = name;
+                            user.description = description;
+                            user.phone = phone;
+
+                            MainActivity.getUsers().child(user.id).setValue(user)
+                                    .addOnFailureListener(f -> {
+                                        Toast.makeText(getContext(),
+                                                "Что-то пошло не так!",
+                                                Toast.LENGTH_SHORT).show();
+                                    })
+                                    .addOnSuccessListener(s -> {
+                                        MainActivity.setUserStatic(user, getContext());
+                                        updateProfileInfo();
+                                    });
+                        }
+                    }
+                }
+        );
+
         ArrayList<Post> posts = new ArrayList<>();
         postAdapter = new PostAdapter(getContext(), posts, true);
         postAdapter.setUserAdapterCallback(user -> {
@@ -97,24 +132,34 @@ public class ProfileFragment extends Fragment {
             dialog.show(getActivity().getSupportFragmentManager(), "custom");
         });
 
-        View header = getLayoutInflater().inflate(R.layout.profile_header, null);
-        header.findViewById(R.id.addPost).setOnClickListener(e -> addNewPost());
+        profileHeader = getLayoutInflater().inflate(R.layout.profile_header, null);
+        updateProfileInfo();
 
-        ((TextView) header.findViewById(R.id.userName)).setText(MainActivity.getUser().name);
-        ((TextView) header.findViewById(R.id.profileDescription)).setText(MainActivity.getUser().description);
-        header.findViewById(R.id.avatarBtn).setOnClickListener(e -> wantToChangeAvatar());
-
-        final ImageView image = header.findViewById(R.id.avatarImg);
+        final ImageView image = profileHeader.findViewById(R.id.avatarImg);
         avatarImg = image;
         if(MainActivity.userAvatar == null)
             image.setImageResource(GetImageFromServer.getDefaultAvatarId());
         else
             image.setImageBitmap(MainActivity.userAvatar);
-        binding.mainList.addHeaderView(header);
+        binding.mainList.addHeaderView(profileHeader);
         binding.mainList.setAdapter(postAdapter);
         setAdapterFromMyUsers();
 
         return view;
+    }
+
+    private void updateProfileInfo() {
+        profileHeader.findViewById(R.id.addPost).setOnClickListener(e -> addNewPost());
+
+        ((TextView) profileHeader.findViewById(R.id.userName)).setText(MainActivity.getUser().name);
+        ((TextView) profileHeader.findViewById(R.id.profileDescription)).setText(MainActivity.getUser().description);
+        profileHeader.findViewById(R.id.avatarBtn).setOnClickListener(e -> wantToChangeAvatar());
+        profileHeader.findViewById(R.id.profileSettings).setOnClickListener(e -> openProfileSettings());
+    }
+
+    private void openProfileSettings() {
+        Intent intent = new Intent(getContext(), EditProfileActivity.class);
+        editProfile.launch(intent);
     }
 
     private void updatePostsContent() {

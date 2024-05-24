@@ -16,4 +16,6 @@
     <string name="player_count">Количество игроков</string>
     <string name="description">Описание</string>
     <string name="r_u_sure">Вы уверены?</string>
+    <string name="profile_name">Имя</string>
+    <string name="phone_number">Номер телефона</string>
 </resources>

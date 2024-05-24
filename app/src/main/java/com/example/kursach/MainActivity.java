@@ -138,9 +138,17 @@ public class MainActivity extends AppCompatActivity {
         return currentUser;
     }
 
-    public void setUser(User user) {
+    public static void setUserStatic(User user, Context context) {
         wall.clear();
         myPosts.clear();
+
+        currentUser = user;
+        userAvatar = null;
+        GetImageFromServer.getAvatar(context, user.id, bitmap -> userAvatar = bitmap);
+    }
+
+    public void setUser(User user) {
+        setUserStatic(user, this);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if(binding.mainFrame.getChildCount() == 0) {
             transaction.add(binding.mainFrame.getId(), wallFragment);
@@ -149,8 +157,5 @@ public class MainActivity extends AppCompatActivity {
             transaction.replace(binding.mainFrame.getId(), wallFragment);
         }
         transaction.commit();
-        currentUser = user;
-        userAvatar = null;
-        GetImageFromServer.getAvatar(this, user.id, bitmap -> userAvatar = bitmap);
     }
 }
