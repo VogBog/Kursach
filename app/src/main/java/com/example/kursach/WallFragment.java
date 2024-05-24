@@ -38,14 +38,7 @@ public class WallFragment extends Fragment {
         Query query = MainActivity.getPosts();
         ArrayList<Post> posts = MainActivity.wall;
         postAdapter = new PostAdapter(binding.getRoot().getContext(), posts, false);
-        postAdapter.setUserAdapterCallback(user -> {
-            Intent intent = new Intent(getContext(), OtherPlayerProfileActivity.class);
-            intent.putExtra(OtherPlayerProfileActivity.NAME, user.name);
-            intent.putExtra(OtherPlayerProfileActivity.PHONE, user.phone);
-            intent.putExtra(OtherPlayerProfileActivity.ID, user.id);
-            intent.putExtra(OtherPlayerProfileActivity.DESCRIPTION, user.description);
-            startActivity(intent);
-        });
+        postAdapter.setUserAdapterCallback(this::openUserProfile);
         if(posts.isEmpty()) {
 
             postAdapter.setCallPostCallback(post -> {
@@ -56,6 +49,7 @@ public class WallFragment extends Fragment {
                         postAdapter.posts.remove(post);
                         postAdapter.notifyDataSetChanged();
                     });
+                    openUserProfile(post.author);
                 });
             });
             query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -110,6 +104,15 @@ public class WallFragment extends Fragment {
         binding.mainList.setAdapter(postAdapter);
 
         return view;
+    }
+
+    private void openUserProfile(User user) {
+        Intent intent = new Intent(getContext(), OtherPlayerProfileActivity.class);
+        intent.putExtra(OtherPlayerProfileActivity.NAME, user.name);
+        intent.putExtra(OtherPlayerProfileActivity.PHONE, user.phone);
+        intent.putExtra(OtherPlayerProfileActivity.ID, user.id);
+        intent.putExtra(OtherPlayerProfileActivity.DESCRIPTION, user.description);
+        startActivity(intent);
     }
 
     private void updateWall() {
