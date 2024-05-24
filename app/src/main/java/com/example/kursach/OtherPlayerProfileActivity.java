@@ -38,7 +38,7 @@ public class OtherPlayerProfileActivity extends AppCompatActivity {
             }
             binding.phoneNumber.setText(phone);
             binding.playerName.setText(name);
-            if(description != null && !description.isEmpty()) {
+            if(description != null) {
                 binding.profileDescription.setText(description);
             }
         }

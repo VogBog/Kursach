@@ -101,6 +101,7 @@ public class ProfileFragment extends Fragment {
         header.findViewById(R.id.addPost).setOnClickListener(e -> addNewPost());
 
         ((TextView) header.findViewById(R.id.userName)).setText(MainActivity.getUser().name);
+        ((TextView) header.findViewById(R.id.profileDescription)).setText(MainActivity.getUser().description);
         header.findViewById(R.id.avatarBtn).setOnClickListener(e -> wantToChangeAvatar());
 
         final ImageView image = header.findViewById(R.id.avatarImg);
