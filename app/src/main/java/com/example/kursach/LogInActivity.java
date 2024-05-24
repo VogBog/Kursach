@@ -3,15 +3,19 @@ package com.example.kursach;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.kursach.callbacks.Callback;
 import com.example.kursach.callbacks.CallbackArg;
 import com.example.kursach.databinding.ActivityLogInBinding;
 import com.example.kursach.databinding.FragmentLogInBinding;
 import com.example.kursach.databinding.FragmentSignInBinding;
+import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
@@ -38,9 +42,6 @@ public class LogInActivity extends AppCompatActivity {
         logInFragment = new LogInFragment();
         logInFragment.setTryToLogInCallback(this::tryToLogIn);
         logInFragment.setWantToRegisterCallback(this::fromLogInToRegister);
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(binding.main.getId(), logInFragment);
-        transaction.commit();
 
         signInFragment = new SignInFragment();
         signInFragment.setWantToLogInCallback(this::fromRegisterToLogIn);
@@ -54,13 +55,26 @@ public class LogInActivity extends AppCompatActivity {
             editor.putString(EMAIL, "None");
             editor.putString(PASS, "N");
             editor.commit();
+
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.add(binding.main.getId(), logInFragment);
+            transaction.commit();
         }
         else {
             String email = prefs.getString(EMAIL, "None");
             String pass = prefs.getString(PASS, "N");
 
             if(!email.equals("None") && !pass.equals("N")) {
-                tryToLogInWithData(email, pass);
+                tryToLogInWithData(email, pass, () -> {
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    transaction.add(binding.main.getId(), logInFragment);
+                    transaction.commit();
+                });
+            }
+            else {
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.add(binding.main.getId(), logInFragment);
+                transaction.commit();
             }
         }
     }
@@ -77,9 +91,14 @@ public class LogInActivity extends AppCompatActivity {
         transaction.commit();
     }
 
-    private boolean tryToLogInWithData(String email, String password) {
+    private boolean tryToLogInWithData(String email, String password, Callback onFailed) {
         MainActivity.getAuth().signInWithEmailAndPassword(email, password).addOnFailureListener(
-                e -> logInFragment.showErrorMessage("Такой пользователь не найден")
+                e -> {
+                    logInFragment.showErrorMessage("Не удалось найти пользователя");
+                    if(onFailed != null) {
+                        onFailed.callback();
+                    }
+                }
         ).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
             @Override
             public void onSuccess(AuthResult authResult) {
@@ -91,12 +110,20 @@ public class LogInActivity extends AppCompatActivity {
                                 User user = dataSnapshot.getValue(User.class);
                                 if(user == null) {
                                     logInFragment.showErrorMessage("Кажется, вас забанили))");
+                                    if(onFailed != null) {
+                                        onFailed.callback();
+                                    }
                                     return;
                                 }
                                 logIn(user);
                             }
                         }
                 );
+            }
+        }).addOnCanceledListener(() -> {
+            Toast.makeText(getBaseContext(), "Что-то пошло не так.", Toast.LENGTH_SHORT).show();
+            if(onFailed != null) {
+                onFailed.callback();
             }
         });
 
@@ -107,7 +134,7 @@ public class LogInActivity extends AppCompatActivity {
         String email = logInBinding.email.getText().toString();
         String password = logInBinding.password.getText().toString();
 
-        return tryToLogInWithData(email, password);
+        return tryToLogInWithData(email, password, null);
     }
 
     private void tryToRegister(FragmentSignInBinding signInBinding) {
