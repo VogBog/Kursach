@@ -10,18 +10,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import com.example.kursach.databinding.FragmentWallBinding;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class WallFragment extends Fragment {
 
@@ -37,21 +33,35 @@ public class WallFragment extends Fragment {
 
         Query query = MainActivity.getPosts();
         ArrayList<Post> posts = MainActivity.wall;
-        postAdapter = new PostAdapter(binding.getRoot().getContext(), posts, false);
-        postAdapter.setUserAdapterCallback(this::openUserProfile);
-        if(posts.isEmpty()) {
-
-            postAdapter.setCallPostCallback(post -> {
-                MainActivity.getPosts().child(post.id).get().addOnSuccessListener(snapshot -> {
-                    PostData data = snapshot.getValue(PostData.class);
-                    data.players.add(MainActivity.getAuth().getCurrentUser().getUid());
-                    MainActivity.getPosts().child(post.id).setValue(data).addOnSuccessListener(d -> {
-                        postAdapter.posts.remove(post);
-                        postAdapter.notifyDataSetChanged();
-                    });
-                    openUserProfile(post.author);
-                });
+        postAdapter = new PostAdapter(binding.getRoot().getContext(), posts, MainActivity.getUser().isAdmin);
+        if(MainActivity.getUser().isAdmin) {
+            postAdapter.setRemovePostCallback(post -> {
+                AreYouSureDialog dialog = new AreYouSureDialog();
+                dialog.onAnswer = bool -> {
+                    if(bool) {
+                        MainActivity.getPosts().child(post.id).removeValue().addOnSuccessListener(e -> {
+                            postAdapter.posts.remove(post);
+                            postAdapter.notifyDataSetChanged();
+                        });
+                    }
+                };
+                dialog.show(getActivity().getSupportFragmentManager(), "custom");
             });
+        }
+        postAdapter.setCallPostCallback(post -> {
+            MainActivity.getPosts().child(post.id).get().addOnSuccessListener(snapshot -> {
+                PostData data = snapshot.getValue(PostData.class);
+                data.players.add(MainActivity.getAuth().getCurrentUser().getUid());
+                MainActivity.getPosts().child(post.id).setValue(data).addOnSuccessListener(d -> {
+                    postAdapter.posts.remove(post);
+                    postAdapter.notifyDataSetChanged();
+                });
+                openUserProfile(post.author);
+            });
+        });
+        postAdapter.setUserAdapterCallback(this::openUserProfile);
+
+        if(posts.isEmpty()) {
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -98,9 +108,6 @@ public class WallFragment extends Fragment {
             });
         }
 
-        //View footerBtn = getLayoutInflater().inflate(R.layout.update_wall_button, null);
-        //footerBtn.findViewById(R.id.reloadWallButton).setOnClickListener(e -> updateWall());
-        //binding.mainList.addFooterView(footerBtn);
         binding.mainList.setAdapter(postAdapter);
 
         return view;

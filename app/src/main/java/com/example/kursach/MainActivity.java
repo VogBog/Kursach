@@ -42,8 +42,10 @@ public class MainActivity extends AppCompatActivity {
     private WallFragment wallFragment;
     private ProfileFragment profileFragment;
     private SettingsFragment settingsFragment;
+    private MyGamesFragment myGamesFragment;
     public static final ArrayList<Post> myPosts = new ArrayList<>();
     public static final ArrayList<Post> wall = new ArrayList<>();
+    public static final ArrayList<Post> subscribedWalls = new ArrayList<>();
 
     private ActivityResultLauncher<Intent> startLogInForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -108,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         wallFragment = new WallFragment();
         profileFragment = new ProfileFragment();
         settingsFragment = new SettingsFragment();
+        myGamesFragment = new MyGamesFragment();
         settingsFragment.setQuitPressedCallback(() -> {
             Intent intent = new Intent(binding.getRoot().getContext(), LogInActivity.class);
             intent.putExtra("IsClear", true);
@@ -124,12 +127,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openPage(int index) {
-        Fragment[] fragments = new Fragment[] {wallFragment, null, profileFragment, settingsFragment};
+        Fragment[] fragments = new Fragment[] {wallFragment, myGamesFragment, profileFragment, settingsFragment};
         if(index >= 0 && index < fragments.length && fragments[index] != null) {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(binding.mainFrame.getId(), fragments[index]);
             transaction.commit();
         }
+    }
+
+    public void reOpen(int index) {
+        openPage(0);
+        openPage(index);
     }
 
     public static User getUser() {

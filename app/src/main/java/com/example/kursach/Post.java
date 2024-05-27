@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.example.kursach.callbacks.CallbackArg;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Post {
     public String id;
@@ -45,6 +46,7 @@ public class Post {
         author = new User();
 
         players.clear();
+        data.players.removeIf(Objects::isNull);
         if(data.players != null) {
             initIds = data.players;
             playersCount = data.players.size();

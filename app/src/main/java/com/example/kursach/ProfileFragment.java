@@ -131,6 +131,25 @@ public class ProfileFragment extends Fragment {
             };
             dialog.show(getActivity().getSupportFragmentManager(), "custom");
         });
+        postAdapter.setRemoveUserCallback((post, user) -> {
+            MainActivity.getPosts().child(post.id + "/players")
+                    .get().addOnSuccessListener(data -> {
+                        String uid = user.id;
+                        int i = 0;
+                        for(DataSnapshot d : data.getChildren()) {
+                            String val = d.getValue(String.class);
+                            if(val.equals(uid)) {
+                                Log.d("POST ID", post.id + "/players/" + i);
+                                MainActivity.getPosts().child(post.id + "/players/" + i)
+                                        .removeValue()
+                                        .addOnSuccessListener(e -> {
+                                            updatePostsContent();
+                                        });
+                            }
+                            i++;
+                        }
+                    });
+        });
 
         profileHeader = getLayoutInflater().inflate(R.layout.profile_header, null);
         updateProfileInfo();
@@ -204,7 +223,7 @@ public class ProfileFragment extends Fragment {
         for(int i = datas.size() - 1; i >= 0; i--) {
             Post post = new Post();
             post.setData(datas.get(i), totalPost -> {
-                postAdapter.add(totalPost);
+                postAdapter.posts.add(totalPost);
                 MainActivity.myPosts.add(totalPost);
                 if(totalPost.id.equals(lastId)) {
                     postAdapter.notifyDataSetChanged();

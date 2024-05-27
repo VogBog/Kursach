@@ -1,22 +1,16 @@
 package com.example.kursach;
 
 import android.content.Context;
-import android.content.Intent;
-import android.media.Image;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewManager;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.kursach.callbacks.CallbackArg;
-
-import org.w3c.dom.Text;
+import com.example.kursach.callbacks.CallbackArg2;
 
 import java.util.ArrayList;
 
@@ -28,6 +22,7 @@ public class PostAdapter extends BaseAdapter {
     private CallbackArg<Post> removePostCallback;
     private CallbackArg<Post> callPostCallback;
     private CallbackArg<User> userCallback;
+    private CallbackArg2<Post, User> removeUserCallback;
 
     public PostAdapter(Context context, ArrayList<Post> posts, boolean isAuthor) {
         this.context = context;
@@ -49,6 +44,7 @@ public class PostAdapter extends BaseAdapter {
         for(Post post : posts) {
             post.players.clear();
         }
+        posts.clear();
     }
 
     @Override
@@ -75,6 +71,11 @@ public class PostAdapter extends BaseAdapter {
         if(convertView == null) {
             convertView = inflater.inflate(R.layout.post, parent, false);
         }
+        ViewManager manager = (ViewManager) convertView.findViewById(R.id.playersList);
+        ViewGroup group = (ViewGroup) convertView.findViewById(R.id.playersList);
+        while(group.getChildCount() > 0) {
+            manager.removeView(group.getChildAt(0));
+        }
 
         Post post = getPost(position);
         ((TextView)convertView.findViewById(R.id.authorName)).setText(post.author.name);
@@ -85,7 +86,19 @@ public class PostAdapter extends BaseAdapter {
         post.layout = convertView.findViewById(R.id.playersList);
 
         if(isAuthor) {
+            String uid = MainActivity.getUser().id;
+            if(post.players != null && !post.players.isEmpty()) {
+                for(User user : post.players) {
+                    user.createView(inflater, post.layout, userCallback, removeUserCallback, post);
+                }
+            }
             for(String userId : post.initIds) {
+                if(userId == null) {
+                    continue;
+                }
+                if(userId.equals(uid)) {
+                    continue;
+                }
                 MainActivity.getUsers().child(userId).get().addOnSuccessListener(snapshot -> {
                     User user = snapshot.getValue(User.class);
                     for(User player : post.players) {
@@ -94,7 +107,7 @@ public class PostAdapter extends BaseAdapter {
                         }
                     }
                     post.players.add(0, user);
-                    user.createView(inflater, post.layout, userCallback);
+                    user.createView(inflater, post.layout, userCallback, removeUserCallback, post);
                 });
             }
         }
@@ -142,5 +155,9 @@ public class PostAdapter extends BaseAdapter {
 
     public void setCallPostCallback(CallbackArg<Post> callback) {
         callPostCallback = callback;
+    }
+
+    public void setRemoveUserCallback(CallbackArg2<Post, User> callback) {
+        removeUserCallback = callback;
     }
 }
