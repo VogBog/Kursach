@@ -8,8 +8,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.animation.AnimationUtils;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -165,5 +170,17 @@ public class MainActivity extends AppCompatActivity {
             transaction.replace(binding.mainFrame.getId(), wallFragment);
         }
         transaction.commit();
+    }
+
+    public void startOKAnimation() {
+        getLayoutInflater().inflate(R.layout.ok_anim, binding.animView);
+        final View view = binding.animView.getChildAt(0);
+        final Handler handler = new Handler(Looper.getMainLooper());
+        final Context context = this;
+        view.startAnimation(AnimationUtils.loadAnimation(context, R.anim.ok_anim));
+        handler.postDelayed(() -> {
+            view.startAnimation(AnimationUtils.loadAnimation(context, R.anim.ok_anim_2));
+        }, 1400);
+        handler.postDelayed(() -> binding.animView.removeView(view), 2000);
     }
 }

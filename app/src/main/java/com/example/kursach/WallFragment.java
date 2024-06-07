@@ -34,6 +34,7 @@ public class WallFragment extends Fragment {
         Query query = MainActivity.getPosts();
         ArrayList<Post> posts = MainActivity.wall;
         postAdapter = new PostAdapter(binding.getRoot().getContext(), posts, MainActivity.getUser().isAdmin);
+        postAdapter.setUserAdapterCallback(this::openUserProfile);
         if(MainActivity.getUser().isAdmin) {
             postAdapter.setRemovePostCallback(post -> {
                 AreYouSureDialog dialog = new AreYouSureDialog();
@@ -58,8 +59,11 @@ public class WallFragment extends Fragment {
                 });
                 openUserProfile(post.author);
             });
+
+            if(getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).startOKAnimation();
+            }
         });
-        postAdapter.setUserAdapterCallback(this::openUserProfile);
 
         if(posts.isEmpty()) {
             query.addListenerForSingleValueEvent(new ValueEventListener() {

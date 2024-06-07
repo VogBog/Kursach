@@ -1,6 +1,7 @@
 package com.example.kursach;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -143,7 +144,25 @@ public class PostAdapter extends BaseAdapter {
                     removePostCallback.callback(post);
                 }
             });
-            convertView.findViewById(R.id.callBtn).setVisibility(View.INVISIBLE);
+            if(MainActivity.getUser().isAdmin) {
+                if(userCallback != null) {
+                    convertView.findViewById(R.id.avatarBtn).setOnClickListener(v ->
+                            userCallback.callback(post.author));
+                }
+                if(!post.author.id.equals(MainActivity.getUser().id)) {
+                    convertView.findViewById(R.id.callBtn).setOnClickListener(e -> {
+                        if(callPostCallback != null) {
+                            callPostCallback.callback(post);
+                        }
+                    });
+                }
+                else {
+                    convertView.findViewById(R.id.callBtn).setVisibility(View.INVISIBLE);
+                }
+            }
+            else {
+                convertView.findViewById(R.id.callBtn).setVisibility(View.INVISIBLE);
+            }
         }
 
         return convertView;
