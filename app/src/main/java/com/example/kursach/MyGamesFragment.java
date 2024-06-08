@@ -31,7 +31,7 @@ public class MyGamesFragment extends Fragment {
 
         ArrayList<Post> posts = MainActivity.subscribedWalls;
         Query query = MainActivity.getPosts();
-        adapter = new PostAdapter(binding.getRoot().getContext(), posts, true);
+        adapter = new PostAdapter(binding.getRoot().getContext(), posts, true, false);
         adapter.setRemovePostCallback(post -> {
             AreYouSureDialog dialog = new AreYouSureDialog();
             dialog.onAnswer = bool -> {

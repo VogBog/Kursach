@@ -110,7 +110,8 @@ public class ProfileFragment extends Fragment {
         );
 
         ArrayList<Post> posts = new ArrayList<>();
-        postAdapter = new PostAdapter(getContext(), posts, true);
+        postAdapter = new PostAdapter(getContext(), posts, true, true);
+        postAdapter.setEditPostCallback(this::startEditPost);
         postAdapter.setUserAdapterCallback(user -> {
             Intent intent = new Intent(getContext(), OtherPlayerProfileActivity.class);
             intent.putExtra(OtherPlayerProfileActivity.NAME, user.name);
@@ -173,6 +174,12 @@ public class ProfileFragment extends Fragment {
         setAdapterFromMyUsers();
 
         return view;
+    }
+
+    private void startEditPost(Post post) {
+        Intent intent = new Intent(getContext(), AddPostActivity.class);
+        intent.putExtra(AddPostActivity.EDIT_POST_ID, post.id);
+        writeNewPost.launch(intent);
     }
 
     private void updateProfileInfo() {

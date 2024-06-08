@@ -33,7 +33,7 @@ public class WallFragment extends Fragment {
 
         Query query = MainActivity.getPosts();
         ArrayList<Post> posts = MainActivity.wall;
-        postAdapter = new PostAdapter(binding.getRoot().getContext(), posts, MainActivity.getUser().isAdmin);
+        postAdapter = new PostAdapter(binding.getRoot().getContext(), posts, MainActivity.getUser().isAdmin, false);
         postAdapter.setUserAdapterCallback(this::openUserProfile);
         if(MainActivity.getUser().isAdmin) {
             postAdapter.setRemovePostCallback(post -> {

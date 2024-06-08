@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewManager;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -19,17 +20,19 @@ public class PostAdapter extends BaseAdapter {
     public final ArrayList<Post> posts = new ArrayList<>();
     private LayoutInflater inflater;
     private Context context;
-    private boolean isAuthor;
+    private boolean isAuthor, canEdit;
     private CallbackArg<Post> removePostCallback;
     private CallbackArg<Post> callPostCallback;
     private CallbackArg<User> userCallback;
     private CallbackArg2<Post, User> removeUserCallback;
+    private CallbackArg<Post> editPostCallback;
 
-    public PostAdapter(Context context, ArrayList<Post> posts, boolean isAuthor) {
+    public PostAdapter(Context context, ArrayList<Post> posts, boolean isAuthor, boolean canEdit) {
         this.context = context;
         this.posts.addAll(posts);
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.isAuthor = isAuthor;
+        this.canEdit = canEdit;
     }
 
     public void add(Post post) {
@@ -169,6 +172,17 @@ public class PostAdapter extends BaseAdapter {
             }
         }
 
+        if(canEdit) {
+            Button btn = convertView.findViewById(R.id.callBtn);
+            btn.setVisibility(View.VISIBLE);
+            btn.setText("Редактировать");
+            btn.setOnClickListener(v -> {
+                if(editPostCallback != null) {
+                    editPostCallback.callback(post);
+                }
+            });
+        }
+
         return convertView;
     }
 
@@ -182,5 +196,9 @@ public class PostAdapter extends BaseAdapter {
 
     public void setRemoveUserCallback(CallbackArg2<Post, User> callback) {
         removeUserCallback = callback;
+    }
+
+    public void setEditPostCallback(CallbackArg<Post> callback) {
+        editPostCallback = callback;
     }
 }
