@@ -11,7 +11,6 @@ import com.example.kursach.databinding.ActivityAddPostBinding;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.UUID;
 
 public class AddPostActivity extends AppCompatActivity {
 

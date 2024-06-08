@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.example.kursach.databinding.FragmentWallBinding;
 import com.google.firebase.database.DataSnapshot;
@@ -121,7 +122,26 @@ public class WallFragment extends Fragment {
 
         binding.mainList.setAdapter(postAdapter);
 
+        binding.searchBtn.setOnClickListener(v -> searchPosts(binding.inputSearchKeys.getText().toString()));
+
         return view;
+    }
+
+    private void searchPosts(String filter) {
+        postAdapter.posts.clear();
+        if(filter.isEmpty()) {
+            postAdapter.posts.addAll(MainActivity.wall);
+        }
+        else {
+            for(Post post : MainActivity.wall) {
+                if(post.author.name.toLowerCase().contains(filter.toLowerCase()) ||
+                post.postName.toLowerCase().contains(filter.toLowerCase()) ||
+                post.postDescription.toLowerCase().contains(filter.toLowerCase())) {
+                    postAdapter.add(post);
+                }
+            }
+        }
+        postAdapter.notifyDataSetChanged();
     }
 
     private void openUserProfile(User user) {
