@@ -14,31 +14,34 @@ import com.example.kursach.callbacks.CallbackArg;
 import com.example.kursach.callbacks.CallbackArg2;
 
 public class User implements Parcelable {
-    public String id, email, pass, name, phone, description;
+    public String id, email, name, phone, description;
     public boolean isAdmin = false;
 
     public User() {
         this.name = "User";
+        this.id = "Empty id";
     }
 
-    public User(String id, String email, String pass, String name, String phone, String description) {
-        this(id, email, pass, name, phone, description, false);
+    public User(String id, String email, String name, String phone, String description) {
+        this(id, email, name, phone, description, false);
     }
 
-    public User(String id, String email, String pass, String name, String phone, String description, boolean isAdmin) {
+    public User(String id, String email, String name, String phone, String description, boolean isAdmin) {
         this.id = id;
         this.email = email;
-        this.pass = pass;
         this.name = name;
         this.phone = phone;
         this.description = description;
         this.isAdmin = isAdmin;
     }
 
+    public boolean isUserEmpty() {
+        return id.equals("Empty id");
+    }
+
     protected User(Parcel in) {
         id = in.readString();
         email = in.readString();
-        pass = in.readString();
         name = in.readString();
         phone = in.readString();
         description = in.readString();
@@ -67,7 +70,6 @@ public class User implements Parcelable {
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString(id);
         dest.writeString(email);
-        dest.writeString(pass);
         dest.writeString(name);
         dest.writeString(phone);
         dest.writeString(description);

@@ -115,7 +115,7 @@ public class LogInActivity extends AppCompatActivity {
                                     }
                                     return;
                                 }
-                                logIn(user);
+                                logIn(user, password);
                             }
                         }
                 );
@@ -149,9 +149,9 @@ public class LogInActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(AuthResult authResult) {
                         String id = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                        User user = new User(id, email, pass, name, phone, "");
+                        User user = new User(id, email, name, phone, "");
                         MainActivity.getUsers().child(id)
-                        .setValue(user).addOnSuccessListener(e -> logIn(user)).addOnFailureListener(
+                        .setValue(user).addOnSuccessListener(e -> logIn(user, pass)).addOnFailureListener(
                                 e -> signInFragment.showErrorMessage("Что-то пошло не так")
                                 );
 
@@ -159,10 +159,10 @@ public class LogInActivity extends AppCompatActivity {
                 });
     }
 
-    private void logIn(User user) {
+    private void logIn(User user, String pass) {
         SharedPreferences.Editor prefs = getPreferences(MODE_PRIVATE).edit();
         prefs.putString(EMAIL, user.email);
-        prefs.putString(PASS, user.pass);
+        prefs.putString(PASS, pass);
         prefs.commit();
 
         Intent intent = new Intent();

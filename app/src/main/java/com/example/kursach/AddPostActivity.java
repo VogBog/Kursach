@@ -54,6 +54,7 @@ public class AddPostActivity extends AppCompatActivity {
         data.id = MainActivity.getUser().id + "-" + timeStamp;
 
         MainActivity.getPosts().child(data.id).setValue(data).addOnSuccessListener(e -> {
+            MainActivity.getInstance().startOKAnimation();
             finish();
         });
     }

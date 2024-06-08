@@ -139,6 +139,10 @@ public class PostAdapter extends BaseAdapter {
             }
         }
         else {
+            if(callPostCallback == null) {
+                convertView.findViewById(R.id.callBtn).setVisibility(View.INVISIBLE);
+            }
+
             convertView.findViewById(R.id.removePostBtn).setOnClickListener(e -> {
                 if(removePostCallback != null) {
                     removePostCallback.callback(post);

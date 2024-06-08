@@ -144,6 +144,14 @@ public class ProfileFragment extends Fragment {
                                         .removeValue()
                                         .addOnSuccessListener(e -> {
                                             updatePostsContent();
+                                            if(getActivity() instanceof MainActivity) {
+                                                NotificationSender sender = new NotificationSender((MainActivity) getActivity());
+                                                sender.sendNotification(user.id, new NotificationData(
+                                                        "Вас исключили",
+                                                        "Вас исключили из игры " + post.postName,
+                                                        0
+                                                ));
+                                            }
                                         });
                             }
                             i++;

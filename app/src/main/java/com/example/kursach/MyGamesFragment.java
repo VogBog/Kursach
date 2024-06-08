@@ -36,6 +36,15 @@ public class MyGamesFragment extends Fragment {
             AreYouSureDialog dialog = new AreYouSureDialog();
             dialog.onAnswer = bool -> {
                 if(bool) {
+                    if(getActivity() instanceof MainActivity) {
+                        NotificationSender sender = new NotificationSender((MainActivity) getActivity());
+                        sender.sendNotification(post.author.id, new NotificationData(
+                                "Игрок покинул нас",
+                                "Игрок " + MainActivity.getUser().name + " покинул Вашу игру " + post.postName,
+                                2
+                        ));
+                    }
+
                     MainActivity.getPosts().child(post.id + "/players")
                             .get().addOnSuccessListener(data -> {
                                 String uid = MainActivity.getUser().id;

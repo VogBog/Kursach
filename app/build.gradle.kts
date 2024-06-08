@@ -47,4 +47,5 @@ dependencies {
     implementation("com.google.firebase:firebase-database:20.3.0")
     implementation("androidx.cardview:cardview:1.0.0")
     implementation("com.google.firebase:firebase-storage:21.0.0")
+    implementation("androidx.work:work-runtime:2.9.0")
 }

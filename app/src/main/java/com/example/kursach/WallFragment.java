@@ -57,12 +57,16 @@ public class WallFragment extends Fragment {
                     postAdapter.posts.remove(post);
                     postAdapter.notifyDataSetChanged();
                 });
-                openUserProfile(post.author);
+                MainActivity.getInstance().startOKAnimation(() -> openUserProfile(post.author));
+                if(getActivity() instanceof MainActivity) {
+                    NotificationSender sender = new NotificationSender((MainActivity) getActivity());
+                    sender.sendNotification(post.author.id, new NotificationData(
+                            "Новый игрок!",
+                            "На вашу игру " + post.postName + " откликнулся " + MainActivity.getUser().name,
+                            1
+                    ));
+                }
             });
-
-            if(getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).startOKAnimation();
-            }
         });
 
         if(posts.isEmpty()) {

@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -23,7 +24,10 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
+import com.example.kursach.callbacks.Callback;
 import com.example.kursach.callbacks.CallbackArg;
 import com.example.kursach.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,6 +38,7 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     ActivityMainBinding binding;
@@ -41,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private static FirebaseDatabase database;
     private static DatabaseReference users;
     private static DatabaseReference posts;
+    private static DatabaseReference notifications;
+    private WorkManager workManager = WorkManager.getInstance(MainActivity.this);
 
     private static User currentUser;
     public static Bitmap userAvatar;
@@ -51,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     public static final ArrayList<Post> myPosts = new ArrayList<>();
     public static final ArrayList<Post> wall = new ArrayList<>();
     public static final ArrayList<Post> subscribedWalls = new ArrayList<>();
+
+    private static MainActivity instance;
 
     private ActivityResultLauncher<Intent> startLogInForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -102,8 +111,20 @@ public class MainActivity extends AppCompatActivity {
         return posts;
     }
 
+    public static DatabaseReference getNotifications() {
+        if(notifications == null) {
+            notifications = getDatabase().getReference("Notifications");
+        }
+        return notifications;
+    }
+
+    public static MainActivity getInstance() {
+        return instance;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        instance = this;
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -129,6 +150,12 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(binding.getRoot().getContext(), LogInActivity.class);
         startLogInForResult.launch(intent);
+
+        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(
+                NotificationWorkManager.class, 10, TimeUnit.SECONDS
+        ).build();
+
+        workManager.enqueue(workRequest);
     }
 
     public void openPage(int index) {
@@ -138,11 +165,6 @@ public class MainActivity extends AppCompatActivity {
             transaction.replace(binding.mainFrame.getId(), fragments[index]);
             transaction.commit();
         }
-    }
-
-    public void reOpen(int index) {
-        openPage(0);
-        openPage(index);
     }
 
     public static User getUser() {
@@ -158,6 +180,9 @@ public class MainActivity extends AppCompatActivity {
         currentUser = user;
         userAvatar = null;
         GetImageFromServer.getAvatar(context, user.id, bitmap -> userAvatar = bitmap);
+
+        NotificationSender sender = new NotificationSender(MainActivity.getInstance());
+        sender.checkNotifications();
     }
 
     public void setUser(User user) {
@@ -173,6 +198,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startOKAnimation() {
+        startOKAnimation(null);
+    }
+
+    public void startOKAnimation(Callback afterAnimation) {
         getLayoutInflater().inflate(R.layout.ok_anim, binding.animView);
         final View view = binding.animView.getChildAt(0);
         final Handler handler = new Handler(Looper.getMainLooper());
@@ -181,6 +210,11 @@ public class MainActivity extends AppCompatActivity {
         handler.postDelayed(() -> {
             view.startAnimation(AnimationUtils.loadAnimation(context, R.anim.ok_anim_2));
         }, 1400);
-        handler.postDelayed(() -> binding.animView.removeView(view), 2000);
+        handler.postDelayed(() -> {
+            binding.animView.removeView(view);
+            if(afterAnimation != null) {
+                afterAnimation.callback();
+            }
+        }, 2000);
     }
 }
