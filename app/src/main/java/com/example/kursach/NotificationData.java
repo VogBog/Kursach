@@ -3,7 +3,7 @@ package com.example.kursach;
 public class NotificationData {
     public String title;
     public String description;
-    public int notificationData; //0 - default, 1 - new player, 2 - remove player
+    public int notificationData; //0 - default, 1 - new player, 2 - remove player, 3 - ban
 
     public NotificationData() {
         title = "";

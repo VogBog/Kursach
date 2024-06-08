@@ -88,6 +88,9 @@ public class WallFragment extends Fragment {
                         boolean isContinue = false;
                         if (datas.get(i).players != null) {
                             for (String id : datas.get(i).players) {
+                                if(id == null) {
+                                    continue;
+                                }
                                 if (id.equals(MainActivity.getAuth().getCurrentUser().getUid())) {
                                     isContinue = true;
                                     break;
