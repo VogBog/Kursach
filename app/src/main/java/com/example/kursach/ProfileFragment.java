@@ -136,27 +136,46 @@ public class ProfileFragment extends Fragment {
             MainActivity.getPosts().child(post.id + "/players")
                     .get().addOnSuccessListener(data -> {
                         String uid = user.id;
-                        int i = 0;
-                        for(DataSnapshot d : data.getChildren()) {
-                            String val = d.getValue(String.class);
-                            if(val.equals(uid)) {
-                                Log.d("POST ID", post.id + "/players/" + i);
-                                MainActivity.getPosts().child(post.id + "/players/" + i)
-                                        .removeValue()
-                                        .addOnSuccessListener(e -> {
-                                            updatePostsContent();
-                                            if(getActivity() instanceof MainActivity) {
-                                                NotificationSender sender = new NotificationSender((MainActivity) getActivity());
-                                                sender.sendNotification(user.id, new NotificationData(
-                                                        "Вас исключили",
-                                                        "Вас исключили из игры " + post.postName,
-                                                        0
-                                                ));
-                                            }
-                                        });
-                            }
-                            i++;
+                        ArrayList<String> users = new ArrayList<>();
+                        for(DataSnapshot i : data.getChildren()) {
+                            users.add(i.getValue(String.class));
                         }
+                        users.remove(uid);
+                        MainActivity.getPosts().child(post.id).child("players")
+                                .setValue(users)
+                                .addOnSuccessListener(e -> {
+                                    updatePostsContent();
+                                    if(getActivity() instanceof MainActivity) {
+                                        NotificationSender sender = new NotificationSender((MainActivity) getActivity());
+                                        sender.sendNotification(user.id, new NotificationData(
+                                                "Вас исключили",
+                                                "Вас исключили из игры " + post.postName,
+                                                0
+                                        ));
+                                    }
+                                });
+
+                        //int i = 0;
+                        //for(DataSnapshot d : data.getChildren()) {
+                        //    String val = d.getValue(String.class);
+                        //    if(val.equals(uid)) {
+                        //        Log.d("POST ID", post.id + "/players/" + i);
+                        //        MainActivity.getPosts().child(post.id + "/players/" + i)
+                        //                .removeValue()
+                        //                .addOnSuccessListener(e -> {
+                        //                    updatePostsContent();
+                        //                    if(getActivity() instanceof MainActivity) {
+                        //                        NotificationSender sender = new NotificationSender((MainActivity) getActivity());
+                        //                        sender.sendNotification(user.id, new NotificationData(
+                        //                                "Вас исключили",
+                        //                                "Вас исключили из игры " + post.postName,
+                        //                                0
+                        //                       ));
+                        //                    }
+                        //                });
+                        //    }
+                        //    i++;
+                        //}
                     });
         });
 

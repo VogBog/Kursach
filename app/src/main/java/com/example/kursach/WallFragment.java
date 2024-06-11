@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import com.example.kursach.databinding.FragmentWallBinding;
 import com.google.firebase.database.DataSnapshot;
@@ -76,8 +75,14 @@ public class WallFragment extends Fragment {
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     ArrayList<PostData> datas = new ArrayList<>();
                     for (DataSnapshot item : snapshot.getChildren()) {
-                        PostData data = item.getValue(PostData.class);
-                        datas.add(data);
+                        try {
+                            PostData data = item.getValue(PostData.class);
+                            datas.add(data);
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            Log.d("EXCEPTION AAAA", item.getKey());
+                        }
                     }
                     for (int i = datas.size() - 1; i >= 0; i--) {
                         if (datas.get(i).authorId.equals(MainActivity.getAuth().getCurrentUser().getUid())) {
@@ -151,34 +156,5 @@ public class WallFragment extends Fragment {
         intent.putExtra(OtherPlayerProfileActivity.ID, user.id);
         intent.putExtra(OtherPlayerProfileActivity.DESCRIPTION, user.description);
         startActivity(intent);
-    }
-
-    private void updateWall() {
-        if(lastItemKey.equals("None")) {
-            return;
-        }
-
-        Query query = MainActivity.getPosts().startAfter(lastItemKey).limitToFirst(20);
-
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot item : snapshot.getChildren()) {
-                    Post post = new Post();
-                    PostData data = item.getValue(PostData.class);
-                    post.setData(data, totalPost -> {
-                        postAdapter.add(totalPost);
-                        postAdapter.notifyDataSetChanged();
-                    });
-
-                    lastItemKey = data.id;
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("ERROR", "Get posts canceled: " + error.getMessage());
-            }
-        });
     }
 }

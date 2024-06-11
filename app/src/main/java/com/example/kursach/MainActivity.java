@@ -3,17 +3,10 @@ package com.example.kursach;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 
@@ -28,15 +21,11 @@ import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import com.example.kursach.callbacks.Callback;
-import com.example.kursach.callbacks.CallbackArg;
 import com.example.kursach.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -176,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
     public static void setUserStatic(User user, Context context) {
         wall.clear();
         myPosts.clear();
+        subscribedWalls.clear();
 
         currentUser = user;
         userAvatar = null;

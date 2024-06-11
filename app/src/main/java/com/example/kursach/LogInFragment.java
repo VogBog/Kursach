@@ -1,6 +1,5 @@
 package com.example.kursach;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -29,12 +28,7 @@ public class LogInFragment extends Fragment {
         binding = FragmentLogInBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
 
-        binding.goToSignIn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                wantToRegister.callback();
-            }
-        });
+        binding.goToSignIn.setOnClickListener(v -> wantToRegister.callback());
 
         binding.logIn.setOnClickListener(new View.OnClickListener() {
             @Override

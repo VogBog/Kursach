@@ -48,22 +48,20 @@ public class MyGamesFragment extends Fragment {
                     MainActivity.getPosts().child(post.id + "/players")
                             .get().addOnSuccessListener(data -> {
                                 String uid = MainActivity.getUser().id;
-                                int i = 0;
-                                for(DataSnapshot d : data.getChildren()) {
-                                    String val = d.getValue(String.class);
-                                    if(val.equals(uid)) {
-                                        MainActivity.getPosts().child(post.id + "/players/" + i)
-                                                .removeValue()
-                                                .addOnSuccessListener(e -> {
-                                                    MainActivity.subscribedWalls.remove(post);
-                                                    if(adapter.posts.contains(post)) {
-                                                        adapter.posts.remove(post);
-                                                        adapter.notifyDataSetChanged();
-                                                    }
-                                                });
-                                    }
-                                    i++;
+                                ArrayList<String> users = new ArrayList<>();
+                                for(DataSnapshot i : data.getChildren()) {
+                                    users.add(i.getValue(String.class));
                                 }
+                                users.remove(uid);
+                                MainActivity.getPosts().child(post.id).child("players")
+                                        .setValue(users)
+                                        .addOnSuccessListener(e -> {
+                                            MainActivity.subscribedWalls.remove(post);
+                                            if(adapter.posts.contains(post)) {
+                                                adapter.posts.remove(post);
+                                                adapter.notifyDataSetChanged();
+                                            }
+                                        });
                             });
                 }
             };
